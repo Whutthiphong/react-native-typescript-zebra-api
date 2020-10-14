@@ -5,6 +5,7 @@ import {
   View,
   DeviceEventEmitter,
   Pressable,
+  TextInput,
 } from 'react-native';
 import DataWedgeIntents from 'react-native-datawedge-intents';
 
@@ -160,10 +161,10 @@ const App = () => {
     var scannedType = scanData['com.symbol.datawedge.label_type'];
     console.log('Scan: ' + scannedData);
     setBarcode(scannedData);
+    return;
   };
 
   const createProfile = () => {
-    //  Set the new configuration
     const barcodeConfig = {
       PLUGIN_NAME: 'BARCODE',
       PARAM_LIST: {
@@ -175,47 +176,35 @@ const App = () => {
         // decoder_code39: '' + state.code39checked,
       },
     };
-    var profileConfig = {
+
+    const intentConfig = {
+      PLUGIN_NAME: 'INTENT',
+      RESET_CONFIG: 'true',
+      PARAM_LIST: {
+        intent_output_enabled: 'true',
+        intent_action: 'com.zebra.reactnativedemo.ACTION',
+        intent_delivery: '2',
+      },
+    };
+
+    /// Keystroke
+    const keystrokeConfig = {
+      PLUGIN_NAME: 'KEYSTROKE',
+      PARAM_LIST: {
+        keystroke_output_enabled: 'false',
+        intent_action: 'com.zebra.reactnativedemo.ACTION',
+        keystroke_action_char: '9',
+        keystroke_delay_control_char: '800',
+      },
+    };
+
+    const profileConfig = {
       PROFILE_NAME: 'ZebraReactNativeDemo',
       PROFILE_ENABLED: 'true',
       CONFIG_MODE: 'CREATE_IF_NOT_EXIST',
-      PLUGIN_CONFIG: barcodeConfig,
+      PLUGIN_CONFIG: [barcodeConfig, keystrokeConfig, intentConfig],
     };
     sendCommand('com.symbol.datawedge.api.SET_CONFIG', profileConfig);
-
-    var profileConfig2 = {
-      PROFILE_NAME: 'ZebraReactNativeDemo',
-      PROFILE_ENABLED: 'true',
-      CONFIG_MODE: 'UPDATE',
-      PLUGIN_CONFIG: {
-        PLUGIN_NAME: 'INTENT',
-        RESET_CONFIG: 'true',
-        PARAM_LIST: {
-          intent_output_enabled: 'true',
-          intent_action: 'com.zebra.reactnativedemo.ACTION',
-          intent_delivery: '2',
-        },
-      },
-    };
-    sendCommand('com.symbol.datawedge.api.SET_CONFIG', profileConfig2);
-
-    var profileConfig3 = {
-      PROFILE_NAME: 'ZebraReactNativeDemo',
-      PROFILE_ENABLED: 'true',
-      CONFIG_MODE: 'UPDATE',
-      PLUGIN_CONFIG: {
-        PLUGIN_NAME: 'BARCODE',
-        RESET_CONFIG: 'true',
-        PARAM_LIST: {},
-      },
-      APP_LIST: [
-        {
-          PACKAGE_NAME: 'com.myapp',
-          ACTIVITY_LIST: ['*'],
-        },
-      ],
-    };
-    sendCommand('com.symbol.datawedge.api.SET_CONFIG', profileConfig3);
   };
   //
 
@@ -233,24 +222,15 @@ const App = () => {
       <Text>SCANNER_FIRMWARE :{JSON.stringify(info.SCANNER_FIRMWARE)}</Text>
       <Text>BARCODE_SCANNING :{info.BARCODE_SCANNING}</Text>
       <Text>DECODER_LIBRARY :{info.DECODER_LIBRARY}</Text>
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: '#aaf',
-          width: '100%',
-          justifyContent: 'center',
-          alignContent: 'center',
-        }}>
-        <Text
+      <View style={styles.containerBarcode}>
+        <Text style={styles.textBarcode}>{barcodeResponse}</Text>
+        <TextInput
+          autoFocus={true}
           style={{
-            justifyContent: 'center',
-            alignContent: 'center',
-            textAlign: 'center',
-            color: '#FFF',
-            fontSize: 30,
-          }}>
-          {barcodeResponse}
-        </Text>
+            backgroundColor: 'red',
+            flex: 1,
+          }}
+        />
       </View>
     </View>
   );
@@ -258,4 +238,20 @@ const App = () => {
 
 export default App;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  textBarcode: {
+    justifyContent: 'center',
+    alignContent: 'center',
+    textAlign: 'center',
+    color: '#FFF',
+    fontSize: 30,
+  },
+  containerBarcode: {
+    flex: 1,
+    flexDirection: 'column',
+    backgroundColor: '#3af',
+    width: '100%',
+    justifyContent: 'center',
+    alignContent: 'center',
+  },
+});
